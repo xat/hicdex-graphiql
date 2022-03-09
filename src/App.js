@@ -14,7 +14,7 @@ import type { GraphQLSchema } from "graphql";
 
 function fetcher(params: Object): Object {
   return fetch(
-    "https://api.hicdex.com/v1/graphql",
+    process.env.REACT_APP_GRAPHQL_API,
     {
       method: "POST",
       headers: {
@@ -36,20 +36,18 @@ function fetcher(params: Object): Object {
     });
 }
 
-const DEFAULT_QUERY = `# shift-option/alt-click on a query below to jump to it in the explorer
-# option/alt-click on a field in the explorer to select all subfields
-
-# {"token": 29597}
-query PriceHistory($token: bigint = "") {
-  hic_et_nunc_trade(where: {token_id: {_eq: $token}}, order_by: {swap: {price: desc}}) {
+const DEFAULT_QUERY = `
+query LatestEvents {
+  events(limit: 100, order_by: {opid: desc}, where: {token: {metadata_status: {_eq: "processed"}}}) {
+    type
     timestamp
-    seller {
-      address
-    }
-    buyer {
-      address
-    }
-    swap {
+    token {
+      fa2_address
+      token_id
+      artist_address
+      symbol
+      name
+      description
       price
     }
   }
