@@ -36,7 +36,28 @@ function fetcher(params: Object): Object {
     });
 }
 
-const DEFAULT_QUERY = `
+const QUERY_TYPES = {
+  'TEZ4TEZ': `
+query Tez4TezStats {
+  stats: tokens_aggregate(where: { tags: { tag: { _in: ["tezos4tezos", "#tezos4tezos"] } } }) {
+    aggregate {
+      sum {
+        sales_count
+        sales_volume
+      }
+    }
+  }
+}
+`
+}
+
+const params = new URLSearchParams(window.location.search);
+let defaultQuery;
+
+if (params.get('type') && params.get('type') in QUERY_TYPES) {
+  defaultQuery = QUERY_TYPES[params.get('type')];
+} else {
+  defaultQuery = `
 query LatestEvents {
   events(limit: 100, order_by: {opid: desc}, where: {token: {metadata_status: {_eq: "processed"}}}) {
     type
@@ -53,6 +74,7 @@ query LatestEvents {
   }
 }
 `;
+}
 
 type State = {
   schema: ?GraphQLSchema,
@@ -62,7 +84,7 @@ type State = {
 
 class App extends Component<{}, State> {
   _graphiql: GraphiQL;
-  state = { schema: null, query: DEFAULT_QUERY, explorerIsOpen: true };
+  state = { schema: null, query: defaultQuery, explorerIsOpen: true };
 
   componentDidMount() {
     fetcher({
